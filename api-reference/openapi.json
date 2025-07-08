@@ -486,106 +486,178 @@
       "Expense": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "created_at": { "type": "string", "format": "date-time" },
-          "name": { "type": "string" },
-          "cost": { "type": "number" },
-          "project_id": { "type": "string", "format": "uuid" },
-          "workspace_id": { "type": "string", "format": "uuid" },
-          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] }
+          "id": { "type": "integer", "format": "int8" },
+          "name": { "type": "string", "format": "text" },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] },
+          "is_recurring": { "type": "boolean", "description": "true if subscription" },
+          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "initialPaymentDate": { "type": "string", "format": "date-time" },
+          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "refund_deadline": { "type": "string", "format": "date-time" },
+          "cost": { "type": "number", "format": "float8" },
+          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "isActive": { "type": "boolean" },
+          "website": { "type": "string", "format": "text" },
+          "workspace_id": { "type": "integer", "format": "int8" },
+          "project_id": { "type": "integer", "format": "int8" },
+          "renewal_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" }
         }
       },
       "NewExpense": {
         "type": "object",
-        "required": ["name", "project_id", "cost", "expense_type"],
+        "required": ["name", "project_id", "cost", "type"],
         "properties": {
-          "name": { "type": "string" },
-          "project_id": { "type": "string", "format": "uuid" },
-          "cost": { "type": "number" },
-          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] }
+          "name": { "type": "string", "format": "text" },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] },
+          "is_recurring": { "type": "boolean", "description": "true if subscription" },
+          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "initialPaymentDate": { "type": "string", "format": "date-time" },
+          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "refund_deadline": { "type": "string", "format": "date-time" },
+          "cost": { "type": "number", "format": "float8" },
+          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "isActive": { "type": "boolean" },
+          "website": { "type": "string", "format": "text" },
+          "project_id": { "type": "integer", "format": "int8" },
+          "renewal_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" }
         }
       },
       "UpdateExpense": {
         "type": "object",
         "properties": {
-          "name": { "type": "string" },
-          "project_id": { "type": "string", "format": "uuid" },
-          "cost": { "type": "number" },
-          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] }
+          "name": { "type": "string", "format": "text" },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] },
+          "is_recurring": { "type": "boolean", "description": "true if subscription" },
+          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "initialPaymentDate": { "type": "string", "format": "date-time" },
+          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "refund_deadline": { "type": "string", "format": "date-time" },
+          "cost": { "type": "number", "format": "float8" },
+          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "isActive": { "type": "boolean" },
+          "website": { "type": "string", "format": "text" },
+          "project_id": { "type": "integer", "format": "int8" },
+          "renewal_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" }
         }
       },
       "RevenueItem": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "created_at": { "type": "string", "format": "date-time" },
-          "name": { "type": "string" },
-          "amount": { "type": "number" },
-          "project_id": { "type": "string", "format": "uuid" },
-          "workspace_id": { "type": "string", "format": "uuid" },
+          "id": { "type": "integer", "format": "int8" },
+          "name": { "type": "string", "format": "text" },
+          "amount": { "type": "number", "format": "float8" },
           "is_recurring": { "type": "boolean" },
-          "billing_freq": { "type": "integer" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"] }
+          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "isActive": { "type": "boolean" },
+          "website": { "type": "string", "format": "text" },
+          "workspace_id": { "type": "integer", "format": "int8" },
+          "project_id": { "type": "integer", "format": "int8" }
         }
       },
       "NewRevenueItem": {
         "type": "object",
         "required": ["name", "amount", "project_id"],
         "properties": {
-          "name": { "type": "string" },
-          "amount": { "type": "number" },
-          "project_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "format": "text" },
+          "amount": { "type": "number", "format": "float8" },
           "is_recurring": { "type": "boolean", "default": false },
-          "billing_freq": { "type": "integer" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"] }
+          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "isActive": { "type": "boolean" },
+          "website": { "type": "string", "format": "text" },
+          "project_id": { "type": "integer", "format": "int8" }
         }
       },
       "UpdateRevenueItem": {
         "type": "object",
         "properties": {
-          "name": { "type": "string" },
-          "amount": { "type": "number" },
-          "project_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "format": "text" },
+          "amount": { "type": "number", "format": "float8" },
           "is_recurring": { "type": "boolean" },
-          "billing_freq": { "type": "integer" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"] }
+          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "isActive": { "type": "boolean" },
+          "website": { "type": "string", "format": "text" },
+          "project_id": { "type": "integer", "format": "int8" }
         }
       },
       "Transaction": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "created_at": { "type": "string", "format": "date-time" },
-          "type": { "type": "string", "enum": ["expense", "revenue"] },
-          "amount": { "type": "number" },
-          "currency_code": { "type": "string" },
+          "id": { "type": "integer", "format": "int8" },
+          "sub_id": { "type": "integer", "format": "int8", "nullable": true, "description": "only if is linked to an expense" },
+          "revenue_item_id": { "type": "integer", "format": "int8", "nullable": true, "description": "only if is linked to a revenue item" },
+          "name": { "type": "string", "format": "text" },
+          "amount": { "type": "number", "format": "float8" },
+          "currency_code": { "type": "string", "description": "i.e. AUD" },
           "date": { "type": "string", "format": "date-time" },
-          "workspace_id": { "type": "string", "format": "uuid" },
-          "sub_id": { "type": "string", "format": "uuid", "nullable": true },
-          "revenue_item_id": { "type": "string", "format": "uuid", "nullable": true }
+          "type": { "type": "string", "enum": ["expense", "revenue"] },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "website": { "type": "string", "format": "text" },
+          "workspace_id": { "type": "integer", "format": "int8" },
+          "project_id": { "type": "integer", "format": "int8" }
         }
       },
       "NewTransaction": {
         "type": "object",
         "required": ["type", "amount", "currency_code", "date"],
         "properties": {
-          "type": { "type": "string", "enum": ["expense", "revenue"] },
-          "amount": { "type": "number" },
-          "currency_code": { "type": "string" },
+          "sub_id": { "type": "integer", "format": "int8", "description": "only if is linked to an expense" },
+          "revenue_item_id": { "type": "integer", "format": "int8", "description": "only if is linked to a revenue item" },
+          "name": { "type": "string", "format": "text" },
+          "amount": { "type": "number", "format": "float8" },
+          "currency_code": { "type": "string", "description": "i.e. AUD" },
           "date": { "type": "string", "format": "date-time" },
-          "sub_id": { "type": "string", "format": "uuid" },
-          "revenue_item_id": { "type": "string", "format": "uuid" }
+          "type": { "type": "string", "enum": ["expense", "revenue"] },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "website": { "type": "string", "format": "text" },
+          "project_id": { "type": "integer", "format": "int8" }
         }
       },
       "UpdateTransaction": {
         "type": "object",
         "properties": {
-          "type": { "type": "string", "enum": ["expense", "revenue"] },
-          "amount": { "type": "number" },
-          "currency_code": { "type": "string" },
+          "sub_id": { "type": "integer", "format": "int8", "description": "only if is linked to an expense" },
+          "revenue_item_id": { "type": "integer", "format": "int8", "description": "only if is linked to a revenue item" },
+          "name": { "type": "string", "format": "text" },
+          "amount": { "type": "number", "format": "float8" },
+          "currency_code": { "type": "string", "description": "i.e. AUD" },
           "date": { "type": "string", "format": "date-time" },
-          "sub_id": { "type": "string", "format": "uuid" },
-          "revenue_item_id": { "type": "string", "format": "uuid" }
+          "type": { "type": "string", "enum": ["expense", "revenue"] },
+          "category": { "type": "string", "format": "text" },
+          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "website": { "type": "string", "format": "text" },
+          "project_id": { "type": "integer", "format": "int8" }
         }
       },
       "Error": {
