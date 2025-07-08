@@ -1,71 +1,41 @@
 ---
-title: Introduction
-description: "Welcome to the home of your new documentation"
+title: 'Introduction'
+description: 'Welcome to the Subly API! Learn how to get started managing your financial data programmatically.'
 ---
 
-<img
-  className="block dark:hidden"
-  src="/images/hero-light.png"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.png"
-  alt="Hero Dark"
-/>
+## What is Subly?
+Subly is a powerful platform for tracking and managing your business's financial data, including recurring expenses, revenue streams, and individual transactions.
 
-## Setting up
+The Subly API provides programmatic access to your workspace data, allowing you to automate workflows, build custom integrations, and sync your financial information with other services. Whether you want to automatically log new sales from your e-commerce store as revenue, pull expense data into a custom dashboard, or build your own financial tools, the API provides the flexibility you need.
 
-The first step to world-class documentation is setting up your editing environments.
+---
 
-<CardGroup cols={2}>
-  <Card
-    title="Edit Your Docs"
-    icon="pen-to-square"
-    href="https://mintlify.com/docs/quickstart"
-  >
-    Get your docs set up locally for easy development
-  </Card>
-  <Card
-    title="Preview Changes"
-    icon="image"
-    href="https://mintlify.com/docs/development"
-  >
-    Preview your changes before you push to make sure they're perfect
-  </Card>
-</CardGroup>
+## Getting an API Key
 
-## Make it yours
+Subly uses API keys to authenticate requests. You can generate and manage your API keys through the [Subly Dashboard](https://web.subly.app/settings).
 
-Update your docs to your brand and add valuable content for the best user conversion.
+Each key is tied to your workspace, ensuring that you can only access the data you are authorized to see.
 
-<CardGroup cols={2}>
-  <Card
-    title="Customize Style"
-    icon="palette"
-    href="https://mintlify.com/docs/settings/global"
-  >
-    Customize your docs to your company's colors and brands
-  </Card>
-  <Card
-    title="Reference APIs"
-    icon="code"
-    href="https://mintlify.com/docs/api-playground/openapi"
-  >
-    Automatically generate endpoints from an OpenAPI spec
-  </Card>
-  <Card
-    title="Add Components"
-    icon="screwdriver-wrench"
-    href="https://mintlify.com/docs/content/components/accordions"
-  >
-    Build interactive features and designs to guide your users
-  </Card>
-  <Card
-    title="Get Inspiration"
-    icon="stars"
-    href="https://mintlify.com/customers"
-  >
-    Check out our showcase of our favorite documentation
-  </Card>
-</CardGroup>
+<Frame>
+    <img
+        alt="API Key Generation"
+        src="/images/api-keys.png"
+    />
+</Frame>
+
+---
+
+## Authentication
+
+To authenticate your API requests, include your secret key in the `x-api-key` header of every request.
+
+<Warning>
+    Your API key is a **secret** and should be stored securely on a server. Never expose it in public repositories, client-side code, or mobile applications.
+</Warning>
+
+Here is an example of how to make an authenticated request using `curl`:
+
+```bash
+curl -X GET "[https://www.subly.app/api/v1/revenue](https://www.subly.app/api/v1/revenue)" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY"
