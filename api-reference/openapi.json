@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "/api/v1",
+      "url": "https://web.subly.app/api/v1",
       "description": "API Server"
     }
   ],
