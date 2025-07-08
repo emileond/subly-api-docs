@@ -1,33 +1,41 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'Welcome to the Subly API! Learn how to get started managing your financial data programmatically.'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## What is Subly?
+Subly is a powerful platform for tracking and managing your business's financial data, including recurring expenses, revenue streams, and individual transactions.
 
-## Welcome
+The Subly API provides programmatic access to your workspace data, allowing you to automate workflows, build custom integrations, and sync your financial information with other services. Whether you want to automatically log new sales from your e-commerce store as revenue, pull expense data into a custom dashboard, or build your own financial tools, the API provides the flexibility you need.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+---
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## Getting an API Key
+
+Subly uses API keys to authenticate requests. You can generate and manage your API keys through the [Subly Dashboard](https://web.subly.app/settings).
+
+Each key is tied to your workspace, ensuring that you can only access the data you are authorized to see.
+
+<Frame>
+    <img
+        alt="API Key Generation"
+        src="/images/api-keys.png"
+    />
+</Frame>
+
+---
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+To authenticate your API requests, include your secret key in the `x-api-key` header of every request.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
-```
+<Warning>
+    Your API key is a **secret** and should be stored securely on a server. Never expose it in public repositories, client-side code, or mobile applications.
+</Warning>
+
+Here is an example of how to make an authenticated request using `curl`:
+
+```bash
+curl -X GET "[https://www.subly.app/api/v1/revenue](https://www.subly.app/api/v1/revenue)" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY"

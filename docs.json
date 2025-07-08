@@ -44,12 +44,33 @@
             ]
           },
           {
-            "group": "Endpoint Examples",
+            "group": "Expenses",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/expenses/get",
+              "api-reference/endpoint/expenses/post",
+              "api-reference/endpoint/expenses/get-by-id",
+              "api-reference/endpoint/expenses/put",
+              "api-reference/endpoint/expenses/delete"
+            ]
+          },
+          {
+            "group": "Revenue",
+            "pages": [
+              "api-reference/endpoint/revenue/get",
+              "api-reference/endpoint/revenue/post",
+              "api-reference/endpoint/revenue/get-by-id",
+              "api-reference/endpoint/revenue/put",
+              "api-reference/endpoint/revenue/delete"
+            ]
+          },
+          {
+            "group": "Transactions",
+            "pages": [
+              "api-reference/endpoint/transactions/get",
+              "api-reference/endpoint/transactions/post",
+              "api-reference/endpoint/transactions/get-by-id",
+              "api-reference/endpoint/transactions/put",
+              "api-reference/endpoint/transactions/delete"
             ]
           }
         ]
