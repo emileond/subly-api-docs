@@ -20,6 +20,16 @@
             ]
           },
           {
+            "group": "Projects",
+            "pages": [
+              "api-reference/endpoint/projects/get",
+              "api-reference/endpoint/projects/post",
+              "api-reference/endpoint/projects/get-by-id",
+              "api-reference/endpoint/projects/put",
+              "api-reference/endpoint/projects/delete"
+            ]
+          },
+          {
             "group": "Expenses",
             "pages": [
               "api-reference/endpoint/expenses/get",
