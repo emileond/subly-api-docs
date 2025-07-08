@@ -492,7 +492,7 @@
           "cost": { "type": "number" },
           "project_id": { "type": "string", "format": "uuid" },
           "workspace_id": { "type": "string", "format": "uuid" },
-          "expense_type": { "type": "string", "enum": ["recurring", "one time"] }
+          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] }
         }
       },
       "NewExpense": {
@@ -502,7 +502,7 @@
           "name": { "type": "string" },
           "project_id": { "type": "string", "format": "uuid" },
           "cost": { "type": "number" },
-          "expense_type": { "type": "string", "enum": ["recurring", "one time"] }
+          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] }
         }
       },
       "UpdateExpense": {
@@ -511,7 +511,7 @@
           "name": { "type": "string" },
           "project_id": { "type": "string", "format": "uuid" },
           "cost": { "type": "number" },
-          "expense_type": { "type": "string", "enum": ["recurring", "one time"] }
+          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] }
         }
       },
       "RevenueItem": {
