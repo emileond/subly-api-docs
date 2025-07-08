@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Subly API",
-    "description": "Subly API to manage workspace data.",
+    "description": "The Subly API provides a comprehensive interface to manage your workspace's financial data, including expenses, revenue, transactions, and projects.",
     "version": "1.0.0",
     "license": {
       "name": "MIT"
@@ -11,7 +11,7 @@
   "servers": [
     {
       "url": "https://web.subly.app/api/v1",
-      "description": "API Server"
+      "description": "Production API Server"
     }
   ],
   "security": [
@@ -21,29 +21,160 @@
   ],
   "tags": [
     {
+      "name": "Projects",
+      "description": "Manage projects to organize your financial items."
+    },
+    {
       "name": "Expenses",
-      "description": "Operations related to expenses"
+      "description": "Operations related to workspace expenses, such as subscriptions or one-time costs."
     },
     {
       "name": "Revenue",
-      "description": "Operations related to revenue items"
+      "description": "Operations related to workspace revenue items."
     },
     {
       "name": "Transactions",
-      "description": "Operations related to financial transactions"
+      "description": "Operations related to individual financial transactions."
     }
   ],
   "paths": {
+    "/projects": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "List all projects",
+        "description": "Retrieves a complete list of projects belonging to the authenticated workspace.",
+        "responses": {
+          "200": {
+            "description": "A list of projects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Create a project",
+        "description": "Creates a new project within the authenticated workspace. The `workspace_id` is automatically assigned.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProject"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/projects/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The unique identifier for the project.",
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get a project by ID",
+        "description": "Retrieves a single project by its unique ID, provided it belongs to the authenticated workspace.",
+        "responses": {
+          "200": {
+            "description": "The requested project details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
+      "put": {
+        "tags": ["Projects"],
+        "summary": "Update a project",
+        "description": "Updates the details of an existing project using its unique ID.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProject"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Delete a project",
+        "description": "Permanently deletes a project by its unique ID. This action cannot be undone.",
+        "responses": {
+          "204": {
+            "description": "Project deleted successfully."
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      }
+    },
     "/expenses": {
       "get": {
         "tags": ["Expenses"],
         "summary": "List all expenses",
-        "description": "Returns a list of all expenses for the authenticated workspace. Can be filtered by project ID.",
+        "description": "Retrieves a list of all expenses for the authenticated workspace. The list can optionally be filtered by the project it's assigned to.",
         "parameters": [
           {
             "name": "project_id",
             "in": "query",
-            "description": "The ID of the project to filter expenses by.",
+            "description": "The unique identifier of the project to filter expenses by.",
             "required": false,
             "schema": {
               "type": "string",
@@ -71,7 +202,7 @@
       "post": {
         "tags": ["Expenses"],
         "summary": "Create an expense",
-        "description": "Creates a new expense record for the workspace.",
+        "description": "Creates a new expense record for the workspace. The `workspace_id` is automatically inferred from the API key.",
         "requestBody": {
           "required": true,
           "content": {
@@ -104,7 +235,7 @@
           "name": "id",
           "in": "path",
           "required": true,
-          "description": "The ID of the expense to retrieve, update, or delete.",
+          "description": "The unique identifier for the expense.",
           "schema": {
             "type": "string",
             "format": "uuid"
@@ -163,7 +294,7 @@
       "delete": {
         "tags": ["Expenses"],
         "summary": "Delete an expense",
-        "description": "Deletes an expense by its unique ID.",
+        "description": "Permanently deletes an expense by its unique ID.",
         "responses": {
           "204": {
             "description": "Expense deleted successfully."
@@ -177,12 +308,12 @@
       "get": {
         "tags": ["Revenue"],
         "summary": "List all revenue items",
-        "description": "Returns a list of all revenue items for the authenticated workspace. Can be filtered.",
+        "description": "Retrieves a list of all revenue items for the authenticated workspace. Can be filtered by project or recurrence status.",
         "parameters": [
           {
             "name": "project_id",
             "in": "query",
-            "description": "The ID of the project to filter revenue by.",
+            "description": "The unique identifier of the project to filter revenue by.",
             "required": false,
             "schema": {
               "type": "string",
@@ -219,7 +350,7 @@
       "post": {
         "tags": ["Revenue"],
         "summary": "Create a revenue item",
-        "description": "Creates a new revenue item for the workspace.",
+        "description": "Creates a new revenue item for the workspace. The `workspace_id` is automatically assigned.",
         "requestBody": {
           "required": true,
           "content": {
@@ -252,7 +383,7 @@
           "name": "id",
           "in": "path",
           "required": true,
-          "description": "The ID of the revenue item to retrieve, update, or delete.",
+          "description": "The unique identifier of the revenue item.",
           "schema": {
             "type": "string",
             "format": "uuid"
@@ -311,7 +442,7 @@
       "delete": {
         "tags": ["Revenue"],
         "summary": "Delete a revenue item",
-        "description": "Deletes a revenue item by its unique ID.",
+        "description": "Permanently deletes a revenue item by its unique ID.",
         "responses": {
           "204": {
             "description": "Revenue item deleted successfully."
@@ -325,7 +456,7 @@
       "get": {
         "tags": ["Transactions"],
         "summary": "List all transactions",
-        "description": "Returns a list of all transactions for the authenticated workspace. Can be filtered.",
+        "description": "Retrieves a list of all financial transactions for the workspace. Can be filtered by type, expense, or revenue item.",
         "parameters": [
           {
             "name": "type",
@@ -340,7 +471,7 @@
           {
             "name": "sub_id",
             "in": "query",
-            "description": "Filter by the associated expense (subscription) ID.",
+            "description": "Filter transactions linked to a specific expense (subscription) ID.",
             "required": false,
             "schema": {
               "type": "string",
@@ -350,7 +481,7 @@
           {
             "name": "revenue_item_id",
             "in": "query",
-            "description": "Filter by the associated revenue item ID.",
+            "description": "Filter transactions linked to a specific revenue item ID.",
             "required": false,
             "schema": {
               "type": "string",
@@ -378,7 +509,7 @@
       "post": {
         "tags": ["Transactions"],
         "summary": "Create a transaction",
-        "description": "Creates a new transaction for the workspace.",
+        "description": "Creates a new transaction record. The `workspace_id` is automatically assigned. A transaction can be optionally linked to an existing expense or revenue item.",
         "requestBody": {
           "required": true,
           "content": {
@@ -411,7 +542,7 @@
           "name": "id",
           "in": "path",
           "required": true,
-          "description": "The ID of the transaction to retrieve, update, or delete.",
+          "description": "The unique identifier for the transaction.",
           "schema": {
             "type": "string",
             "format": "uuid"
@@ -470,7 +601,7 @@
       "delete": {
         "tags": ["Transactions"],
         "summary": "Delete a transaction",
-        "description": "Deletes a transaction by its unique ID.",
+        "description": "Permanently deletes a transaction by its unique ID.",
         "responses": {
           "204": {
             "description": "Transaction deleted successfully."
@@ -483,181 +614,211 @@
   },
   "components": {
     "schemas": {
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "description": "Unique identifier for the project.", "readOnly": true },
+          "name": { "type": "string", "description": "The name of the project." },
+          "workspace_id": { "type": "string", "format": "uuid", "description": "Identifier of the workspace this project belongs to.", "readOnly": true },
+          "budget_amount": { "type": "number", "format": "float", "description": "The financial budget allocated to the project." },
+          "budget_period": { "type": "string", "enum": ["month", "year"], "description": "The time period the budget covers." },
+          "budget_currency": { "type": "string", "description": "The ISO 4217 currency code for the budget amount (e.g., 'USD', 'AUD')." }
+        }
+      },
+      "NewProject": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "description": "The name of the project." },
+          "budget_amount": { "type": "number", "format": "float", "description": "The financial budget allocated to the project." },
+          "budget_period": { "type": "string", "enum": ["month", "year"], "description": "The time period the budget covers." },
+          "budget_currency": { "type": "string", "description": "The ISO 4217 currency code for the budget amount (e.g., 'USD', 'AUD')." }
+        }
+      },
+      "UpdateProject": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "The new name of the project." },
+          "budget_amount": { "type": "number", "format": "float", "description": "The new financial budget for the project." },
+          "budget_period": { "type": "string", "enum": ["month", "year"], "description": "The new time period for the budget." },
+          "budget_currency": { "type": "string", "description": "The new ISO 4217 currency code for the budget." }
+        }
+      },
       "Expense": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int8" },
-          "name": { "type": "string", "format": "text" },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
-          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] },
-          "is_recurring": { "type": "boolean", "description": "true if subscription" },
-          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
-          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
-          "initialPaymentDate": { "type": "string", "format": "date-time" },
-          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
-          "refund_deadline": { "type": "string", "format": "date-time" },
-          "cost": { "type": "number", "format": "float8" },
-          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
-          "isActive": { "type": "boolean" },
-          "website": { "type": "string", "format": "text" },
-          "workspace_id": { "type": "integer", "format": "int8" },
-          "project_id": { "type": "integer", "format": "int8" },
-          "renewal_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" }
+          "id": { "type": "string", "format": "uuid", "description": "Unique identifier for the expense.", "readOnly": true },
+          "name": { "type": "string", "description": "Name of the expense (e.g., 'Netflix Subscription')." },
+          "category": { "type": "string", "description": "Category for the expense (e.g., 'Software')." },
+          "tags": { "type": "array", "items": { "type": "integer" }, "description": "An array of tag IDs for organizational purposes." },
+          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"], "description": "The type of expense." },
+          "is_recurring": { "type": "boolean", "description": "Flag indicating if the expense is recurring. Automatically true if type is 'subscription'." },
+          "billing_freq": { "type": "integer", "description": "Numeric value for the billing frequency (e.g., 1, 3). Required if recurring." },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "The time unit for the billing frequency. Required if recurring." },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "The date of the next scheduled payment. Required if recurring." },
+          "initialPaymentDate": { "type": "string", "format": "date-time", "description": "The date the first payment was made." },
+          "end_date": { "type": "string", "format": "date-time", "description": "The date the recurring expense is set to end." },
+          "refund_deadline": { "type": "string", "format": "date-time", "description": "The final date a refund can be requested." },
+          "cost": { "type": "number", "format": "float", "description": "The monetary cost of the expense." },
+          "currency": { "type": "string", "description": "The ISO 4217 currency code of the cost (e.g., 'USD', 'AUD')." },
+          "isActive": { "type": "boolean", "description": "Whether the expense is currently active." },
+          "website": { "type": "string", "format": "uri", "description": "URL of the service or product provider." },
+          "workspace_id": { "type": "string", "format": "uuid", "description": "Identifier of the workspace this expense belongs to.", "readOnly": true },
+          "project_id": { "type": "string", "format": "uuid", "description": "Identifier of the project this expense is assigned to." },
+          "renewal_date": { "type": "string", "format": "date-time", "description": "The date the subscription is set to renew." }
         }
       },
       "NewExpense": {
         "type": "object",
         "required": ["name", "project_id", "cost", "type"],
         "properties": {
-          "name": { "type": "string", "format": "text" },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
-          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] },
-          "is_recurring": { "type": "boolean", "description": "true if subscription" },
-          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
-          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "name": { "type": "string", "description": "Name of the expense." },
+          "category": { "type": "string", "description": "Category for the expense." },
+          "tags": { "type": "array", "items": { "type": "integer" }, "description": "Array of tag IDs." },
+          "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"], "description": "The type of expense." },
+          "is_recurring": { "type": "boolean", "description": "Is the expense recurring?" },
+          "billing_freq": { "type": "integer", "description": "Required if recurring." },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "Required if recurring." },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "Required if recurring." },
           "initialPaymentDate": { "type": "string", "format": "date-time" },
-          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "end_date": { "type": "string", "format": "date-time" },
           "refund_deadline": { "type": "string", "format": "date-time" },
-          "cost": { "type": "number", "format": "float8" },
-          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "cost": { "type": "number", "format": "float", "description": "Cost of the expense." },
+          "currency": { "type": "string", "description": "ISO 4217 currency code." },
           "isActive": { "type": "boolean" },
-          "website": { "type": "string", "format": "text" },
-          "project_id": { "type": "integer", "format": "int8" },
-          "renewal_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" }
+          "website": { "type": "string", "format": "uri" },
+          "project_id": { "type": "string", "format": "uuid", "description": "Project to assign the expense to." },
+          "renewal_date": { "type": "string", "format": "date-time" }
         }
       },
       "UpdateExpense": {
         "type": "object",
         "properties": {
-          "name": { "type": "string", "format": "text" },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
+          "name": { "type": "string", "description": "New name for the expense." },
+          "category": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "integer" } },
           "type": { "type": "string", "enum": ["subscription", "one-time", "ltd"] },
-          "is_recurring": { "type": "boolean", "description": "true if subscription" },
-          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
-          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "is_recurring": { "type": "boolean" },
+          "billing_freq": { "type": "integer" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"] },
+          "nextPaymentDate": { "type": "string", "format": "date-time" },
           "initialPaymentDate": { "type": "string", "format": "date-time" },
-          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
+          "end_date": { "type": "string", "format": "date-time" },
           "refund_deadline": { "type": "string", "format": "date-time" },
-          "cost": { "type": "number", "format": "float8" },
-          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "cost": { "type": "number", "format": "float" },
+          "currency": { "type": "string" },
           "isActive": { "type": "boolean" },
-          "website": { "type": "string", "format": "text" },
-          "project_id": { "type": "integer", "format": "int8" },
-          "renewal_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" }
+          "website": { "type": "string", "format": "uri" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "renewal_date": { "type": "string", "format": "date-time" }
         }
       },
       "RevenueItem": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int8" },
-          "name": { "type": "string", "format": "text" },
-          "amount": { "type": "number", "format": "float8" },
-          "is_recurring": { "type": "boolean" },
-          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
-          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
-          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
-          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
-          "isActive": { "type": "boolean" },
-          "website": { "type": "string", "format": "text" },
-          "workspace_id": { "type": "integer", "format": "int8" },
-          "project_id": { "type": "integer", "format": "int8" }
+          "id": { "type": "string", "format": "uuid", "description": "Unique identifier for the revenue item.", "readOnly": true },
+          "name": { "type": "string", "description": "Name of the revenue source." },
+          "amount": { "type": "number", "format": "float", "description": "The monetary amount of the revenue." },
+          "is_recurring": { "type": "boolean", "description": "Flag indicating if the revenue is recurring." },
+          "billing_freq": { "type": "integer", "description": "Numeric value for billing frequency. Required if recurring." },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "Time unit for billing frequency. Required if recurring." },
+          "category": { "type": "string", "description": "Category for the revenue item." },
+          "tags": { "type": "array", "items": { "type": "integer" }, "description": "Array of tag IDs for organization." },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "Date of the next expected payment. Required if recurring." },
+          "end_date": { "type": "string", "format": "date-time", "description": "Date the recurring revenue stream ends." },
+          "currency": { "type": "string", "description": "ISO 4217 currency code for the amount." },
+          "isActive": { "type": "boolean", "description": "Whether the revenue item is currently active." },
+          "website": { "type": "string", "format": "uri", "description": "Associated URL, e.g., a client's website." },
+          "workspace_id": { "type": "string", "format": "uuid", "description": "Identifier of the workspace this revenue belongs to.", "readOnly": true },
+          "project_id": { "type": "string", "format": "uuid", "description": "Identifier of the project this revenue is assigned to." }
         }
       },
       "NewRevenueItem": {
         "type": "object",
         "required": ["name", "amount", "project_id"],
         "properties": {
-          "name": { "type": "string", "format": "text" },
-          "amount": { "type": "number", "format": "float8" },
+          "name": { "type": "string", "description": "Name of the revenue source." },
+          "amount": { "type": "number", "format": "float", "description": "Monetary amount of the revenue." },
           "is_recurring": { "type": "boolean", "default": false },
-          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
-          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
-          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
-          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "billing_freq": { "type": "integer", "description": "Required if recurring." },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "Required if recurring." },
+          "category": { "type": "string", "description": "Category for the revenue." },
+          "tags": { "type": "array", "items": { "type": "integer" } },
+          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "Required if recurring." },
+          "end_date": { "type": "string", "format": "date-time" },
+          "currency": { "type": "string", "description": "ISO 4217 currency code." },
           "isActive": { "type": "boolean" },
-          "website": { "type": "string", "format": "text" },
-          "project_id": { "type": "integer", "format": "int8" }
+          "website": { "type": "string", "format": "uri" },
+          "project_id": { "type": "string", "format": "uuid", "description": "Project to assign the revenue to." }
         }
       },
       "UpdateRevenueItem": {
         "type": "object",
         "properties": {
-          "name": { "type": "string", "format": "text" },
-          "amount": { "type": "number", "format": "float8" },
+          "name": { "type": "string" },
+          "amount": { "type": "number", "format": "float" },
           "is_recurring": { "type": "boolean" },
-          "billing_freq": { "type": "integer", "format": "int2", "description": "only if is_recurring" },
-          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"], "description": "only if is_recurring" },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
-          "nextPaymentDate": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
-          "end_date": { "type": "string", "format": "date-time", "description": "only if is_recurring" },
-          "currency": { "type": "string", "format": "text", "description": "i.e. AUD" },
+          "billing_freq": { "type": "integer" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"] },
+          "category": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "integer" } },
+          "nextPaymentDate": { "type": "string", "format": "date-time" },
+          "end_date": { "type": "string", "format": "date-time" },
+          "currency": { "type": "string" },
           "isActive": { "type": "boolean" },
-          "website": { "type": "string", "format": "text" },
-          "project_id": { "type": "integer", "format": "int8" }
+          "website": { "type": "string", "format": "uri" },
+          "project_id": { "type": "string", "format": "uuid" }
         }
       },
       "Transaction": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int8" },
-          "sub_id": { "type": "integer", "format": "int8", "nullable": true, "description": "only if is linked to an expense" },
-          "revenue_item_id": { "type": "integer", "format": "int8", "nullable": true, "description": "only if is linked to a revenue item" },
-          "name": { "type": "string", "format": "text" },
-          "amount": { "type": "number", "format": "float8" },
-          "currency_code": { "type": "string", "description": "i.e. AUD" },
-          "date": { "type": "string", "format": "date-time" },
-          "type": { "type": "string", "enum": ["expense", "revenue"] },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
-          "website": { "type": "string", "format": "text" },
-          "workspace_id": { "type": "integer", "format": "int8" },
-          "project_id": { "type": "integer", "format": "int8" }
+          "id": { "type": "string", "format": "uuid", "description": "Unique identifier for the transaction.", "readOnly": true },
+          "sub_id": { "type": "string", "format": "uuid", "nullable": true, "description": "ID of the linked expense, if applicable." },
+          "revenue_item_id": { "type": "string", "format": "uuid", "nullable": true, "description": "ID of the linked revenue item, if applicable." },
+          "name": { "type": "string", "description": "A descriptive name for the transaction." },
+          "amount": { "type": "number", "format": "float", "description": "The value of the transaction." },
+          "currency_code": { "type": "string", "description": "The ISO 4217 currency code for the transaction amount." },
+          "date": { "type": "string", "format": "date-time", "description": "The date and time the transaction occurred." },
+          "type": { "type": "string", "enum": ["expense", "revenue"], "description": "The type of transaction." },
+          "category": { "type": "string", "description": "Organizational category for the transaction." },
+          "tags": { "type": "array", "items": { "type": "integer" }, "description": "Array of tag IDs." },
+          "website": { "type": "string", "format": "uri", "description": "Associated website, if any." },
+          "workspace_id": { "type": "string", "format": "uuid", "description": "Identifier of the workspace this transaction belongs to.", "readOnly": true },
+          "project_id": { "type": "string", "format": "uuid", "description": "Identifier of the project this transaction is assigned to." }
         }
       },
       "NewTransaction": {
         "type": "object",
         "required": ["type", "amount", "currency_code", "date"],
         "properties": {
-          "sub_id": { "type": "integer", "format": "int8", "description": "only if is linked to an expense" },
-          "revenue_item_id": { "type": "integer", "format": "int8", "description": "only if is linked to a revenue item" },
-          "name": { "type": "string", "format": "text" },
-          "amount": { "type": "number", "format": "float8" },
-          "currency_code": { "type": "string", "description": "i.e. AUD" },
-          "date": { "type": "string", "format": "date-time" },
+          "sub_id": { "type": "string", "format": "uuid", "description": "ID of an expense to link to this transaction." },
+          "revenue_item_id": { "type": "string", "format": "uuid", "description": "ID of a revenue item to link to this transaction." },
+          "name": { "type": "string", "description": "A descriptive name for the transaction." },
+          "amount": { "type": "number", "format": "float" },
+          "currency_code": { "type": "string", "description": "ISO 4217 currency code." },
+          "date": { "type": "string", "format": "date-time", "description": "Date the transaction occurred." },
           "type": { "type": "string", "enum": ["expense", "revenue"] },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
-          "website": { "type": "string", "format": "text" },
-          "project_id": { "type": "integer", "format": "int8" }
+          "category": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "integer" } },
+          "website": { "type": "string", "format": "uri" },
+          "project_id": { "type": "string", "format": "uuid" }
         }
       },
       "UpdateTransaction": {
         "type": "object",
         "properties": {
-          "sub_id": { "type": "integer", "format": "int8", "description": "only if is linked to an expense" },
-          "revenue_item_id": { "type": "integer", "format": "int8", "description": "only if is linked to a revenue item" },
-          "name": { "type": "string", "format": "text" },
-          "amount": { "type": "number", "format": "float8" },
-          "currency_code": { "type": "string", "description": "i.e. AUD" },
+          "sub_id": { "type": "string", "format": "uuid" },
+          "revenue_item_id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "amount": { "type": "number", "format": "float" },
+          "currency_code": { "type": "string" },
           "date": { "type": "string", "format": "date-time" },
           "type": { "type": "string", "enum": ["expense", "revenue"] },
-          "category": { "type": "string", "format": "text" },
-          "tags": { "type": "array", "items": { "type": "integer" }, "format": "jsonb", "description": "Array of tags ids, i.e. [1362,86,85]" },
-          "website": { "type": "string", "format": "text" },
-          "project_id": { "type": "integer", "format": "int8" }
+          "category": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "integer" } },
+          "website": { "type": "string", "format": "uri" },
+          "project_id": { "type": "string", "format": "uuid" }
         }
       },
       "Error": {
@@ -665,7 +826,8 @@
         "required": ["error"],
         "properties": {
           "error": {
-            "type": "string"
+            "type": "string",
+            "description": "A message describing the error."
           }
         }
       }
@@ -674,12 +836,13 @@
       "apiKeyAuth": {
         "type": "apiKey",
         "in": "header",
-        "name": "x-api-key"
+        "name": "x-api-key",
+        "description": "Your private API key for authentication. This key identifies your workspace for all requests."
       }
     },
     "responses": {
       "UnauthorizedError": {
-        "description": "API key is missing, invalid, or revoked.",
+        "description": "Authentication error. The API key is missing, invalid, or revoked.",
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/Error" }
@@ -687,7 +850,7 @@
         }
       },
       "NotFoundError": {
-        "description": "The requested resource was not found.",
+        "description": "The requested resource could not be found.",
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/Error" }
@@ -695,7 +858,7 @@
         }
       },
       "BadRequestError": {
-        "description": "The request body is missing required fields or contains invalid data.",
+        "description": "The request is invalid. This can be due to a missing required field or malformed data in the request body.",
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/Error" }
