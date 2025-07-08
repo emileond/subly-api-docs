@@ -51,7 +51,7 @@
           }
         ]
       }
-    ],
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",
@@ -69,5 +69,5 @@
       "label": "Dashboard",
       "href": "https://web.subly.app"
     }
-  },
+  }
 }
