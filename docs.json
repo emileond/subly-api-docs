@@ -14,12 +14,6 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "API Documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
             "group": "Projects",
             "pages": [
               "api-reference/endpoint/projects/get",
