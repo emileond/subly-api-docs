@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Subly API",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#805AD5",
+    "light": "#9F7AEA",
+    "dark": "#6B46C1"
   },
   "favicon": "/favicon.svg",
   "navigation": {
