@@ -1,216 +1,634 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "Subly API",
+    "description": "Subly API to manage workspace data.",
+    "version": "1.0.0",
     "license": {
       "name": "MIT"
-    },
-    "version": "1.0.0"
+    }
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "/api/v1",
+      "description": "API Server"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "apiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Expenses",
+      "description": "Operations related to expenses"
+    },
+    {
+      "name": "Revenue",
+      "description": "Operations related to revenue items"
+    },
+    {
+      "name": "Transactions",
+      "description": "Operations related to financial transactions"
     }
   ],
   "paths": {
-    "/plants": {
+    "/expenses": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
+        "tags": ["Expenses"],
+        "summary": "List all expenses",
+        "description": "Returns a list of all expenses for the authenticated workspace. Can be filtered by project ID.",
         "parameters": [
           {
-            "name": "limit",
+            "name": "project_id",
             "in": "query",
-            "description": "The maximum number of results to return",
+            "description": "The ID of the project to filter expenses by.",
+            "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "A list of expenses.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Plant"
+                    "$ref": "#/components/schemas/Expense"
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
         }
       },
       "post": {
-        "description": "Creates a new plant in the store",
+        "tags": ["Expenses"],
+        "summary": "Create an expense",
+        "description": "Creates a new expense record for the workspace.",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
+                "$ref": "#/components/schemas/NewExpense"
               }
             }
           }
+        },
+        "responses": {
+          "201": {
+            "description": "Expense created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expense"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
         }
       }
     },
-    "/plants/{id}": {
+    "/expenses/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The ID of the expense to retrieve, update, or delete.",
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Expenses"],
+        "summary": "Get an expense by ID",
+        "description": "Retrieves a single expense by its unique ID.",
+        "responses": {
+          "200": {
+            "description": "The requested expense.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expense"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
+      "put": {
+        "tags": ["Expenses"],
+        "summary": "Update an expense",
+        "description": "Updates the details of an existing expense.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExpense"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Expense updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Expense"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
       "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+        "tags": ["Expenses"],
+        "summary": "Delete an expense",
+        "description": "Deletes an expense by its unique ID.",
+        "responses": {
+          "204": {
+            "description": "Expense deleted successfully."
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      }
+    },
+    "/revenue": {
+      "get": {
+        "tags": ["Revenue"],
+        "summary": "List all revenue items",
+        "description": "Returns a list of all revenue items for the authenticated workspace. Can be filtered.",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
+            "name": "project_id",
+            "in": "query",
+            "description": "The ID of the project to filter revenue by.",
+            "required": false,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "is_recurring",
+            "in": "query",
+            "description": "Filter by whether the revenue is recurring.",
+            "required": false,
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "A list of revenue items.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RevenueItem"
+                  }
                 }
               }
             }
-          }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
         }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
+      },
       "post": {
-        "description": "Information about a new plant added to the store",
+        "tags": ["Revenue"],
+        "summary": "Create a revenue item",
+        "description": "Creates a new revenue item for the workspace.",
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/NewRevenueItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Revenue item created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevenueItem"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/revenue/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The ID of the revenue item to retrieve, update, or delete.",
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Revenue"],
+        "summary": "Get a revenue item by ID",
+        "description": "Retrieves a single revenue item by its unique ID.",
+        "responses": {
+          "200": {
+            "description": "The requested revenue item.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevenueItem"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
+      "put": {
+        "tags": ["Revenue"],
+        "summary": "Update a revenue item",
+        "description": "Updates the details of an existing revenue item.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRevenueItem"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Revenue item updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevenueItem"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
+      "delete": {
+        "tags": ["Revenue"],
+        "summary": "Delete a revenue item",
+        "description": "Deletes a revenue item by its unique ID.",
+        "responses": {
+          "204": {
+            "description": "Revenue item deleted successfully."
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      }
+    },
+    "/transactions": {
+      "get": {
+        "tags": ["Transactions"],
+        "summary": "List all transactions",
+        "description": "Returns a list of all transactions for the authenticated workspace. Can be filtered.",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter by transaction type.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["expense", "revenue"]
+            }
+          },
+          {
+            "name": "sub_id",
+            "in": "query",
+            "description": "Filter by the associated expense (subscription) ID.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "revenue_item_id",
+            "in": "query",
+            "description": "Filter by the associated revenue item ID.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of transactions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transaction"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      },
+      "post": {
+        "tags": ["Transactions"],
+        "summary": "Create a transaction",
+        "description": "Creates a new transaction for the workspace.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewTransaction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/transactions/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The ID of the transaction to retrieve, update, or delete.",
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Transactions"],
+        "summary": "Get a transaction by ID",
+        "description": "Retrieves a single transaction by its unique ID.",
+        "responses": {
+          "200": {
+            "description": "The requested transaction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
+      "put": {
+        "tags": ["Transactions"],
+        "summary": "Update a transaction",
+        "description": "Updates the details of an existing transaction.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTransaction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transaction updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequestError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
+        }
+      },
+      "delete": {
+        "tags": ["Transactions"],
+        "summary": "Delete a transaction",
+        "description": "Deletes a transaction by its unique ID.",
+        "responses": {
+          "204": {
+            "description": "Transaction deleted successfully."
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" }
         }
       }
     }
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "Expense": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
+          "id": { "type": "string", "format": "uuid" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "name": { "type": "string" },
+          "cost": { "type": "number" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "workspace_id": { "type": "string", "format": "uuid" },
+          "expense_type": { "type": "string", "enum": ["recurring", "one time"] }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
+      "NewExpense": {
+        "type": "object",
+        "required": ["name", "project_id", "cost", "expense_type"],
+        "properties": {
+          "name": { "type": "string" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "cost": { "type": "number" },
+          "expense_type": { "type": "string", "enum": ["recurring", "one time"] }
+        }
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "UpdateExpense": {
         "type": "object",
         "properties": {
+          "name": { "type": "string" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "cost": { "type": "number" },
+          "expense_type": { "type": "string", "enum": ["recurring", "one time"] }
+        }
+      },
+      "RevenueItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "name": { "type": "string" },
+          "amount": { "type": "number" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "workspace_id": { "type": "string", "format": "uuid" },
+          "is_recurring": { "type": "boolean" },
+          "billing_freq": { "type": "integer" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"] }
+        }
+      },
+      "NewRevenueItem": {
+        "type": "object",
+        "required": ["name", "amount", "project_id"],
+        "properties": {
+          "name": { "type": "string" },
+          "amount": { "type": "number" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "is_recurring": { "type": "boolean", "default": false },
+          "billing_freq": { "type": "integer" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"] }
+        }
+      },
+      "UpdateRevenueItem": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "amount": { "type": "number" },
+          "project_id": { "type": "string", "format": "uuid" },
+          "is_recurring": { "type": "boolean" },
+          "billing_freq": { "type": "integer" },
+          "billing_range": { "type": "string", "enum": ["day", "week", "month", "year"] }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "type": { "type": "string", "enum": ["expense", "revenue"] },
+          "amount": { "type": "number" },
+          "currency_code": { "type": "string" },
+          "date": { "type": "string", "format": "date-time" },
+          "workspace_id": { "type": "string", "format": "uuid" },
+          "sub_id": { "type": "string", "format": "uuid", "nullable": true },
+          "revenue_item_id": { "type": "string", "format": "uuid", "nullable": true }
+        }
+      },
+      "NewTransaction": {
+        "type": "object",
+        "required": ["type", "amount", "currency_code", "date"],
+        "properties": {
+          "type": { "type": "string", "enum": ["expense", "revenue"] },
+          "amount": { "type": "number" },
+          "currency_code": { "type": "string" },
+          "date": { "type": "string", "format": "date-time" },
+          "sub_id": { "type": "string", "format": "uuid" },
+          "revenue_item_id": { "type": "string", "format": "uuid" }
+        }
+      },
+      "UpdateTransaction": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["expense", "revenue"] },
+          "amount": { "type": "number" },
+          "currency_code": { "type": "string" },
+          "date": { "type": "string", "format": "date-time" },
+          "sub_id": { "type": "string", "format": "uuid" },
+          "revenue_item_id": { "type": "string", "format": "uuid" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
           "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
             "type": "string"
           }
         }
       }
     },
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "API key is missing, invalid, or revoked.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "The requested resource was not found.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "BadRequestError": {
+        "description": "The request body is missing required fields or contains invalid data.",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
       }
     }
   }
